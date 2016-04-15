@@ -1,0 +1,15 @@
+---
+galaxy_info:
+  author: z
+  description: ceph mon configure
+  company:
+  license: license (BSD, MIT)
+  min_ansible_version: 1.8
+  platforms:
+  - name: EL
+    versions:
+    - 7
+  categories:
+  - cloud
+  - system
+dependencies: []

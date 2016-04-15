@@ -1,0 +1,37 @@
+---
+# tasks file for ansible-role-ceph-mon
+
+- name: Create monitor initial keyring.
+  command: ceph-authtool /var/lib/ceph/tmp/keyring.mon.{{ ansible_hostname }} --create-keyring --name=mon. --add-key={{ monitor_secret }} --cap mon 'allow *' creates=/var/lib/ceph/tmp/keyring.mon.{{ ansible_hostname }}
+
+- name: Set initial monitor key permissions.
+  file: path=/var/lib/ceph/tmp/keyring.mon.{{ ansible_hostname }} mode=0600 owner=root group=root
+
+- name: Create a default data directory (or directories) on the monitor host(s).
+  file: path=/var/lib/ceph/mon/{{ ceph_cluster_name }}-{{ ansible_hostname }} state=directory owner=root group=root mode=0644
+
+- name: Populate the monitor daemon(s) with the monitor keyring.
+  command: ceph-mon --cluster {{ ceph_cluster_name }} --mkfs -i {{ ansible_hostname }} --keyring /var/lib/ceph/tmp/keyring.mon.{{ ansible_hostname }} creates=/var/lib/ceph/mon/ceph-{{ ansible_hostname }}/keyring
+
+- name: Touch the done file.
+  file: path=/var/lib/ceph/mon/{{ ceph_cluster_name }}-{{ ansible_hostname }}/done state=touch owner=root group=root mode=0644
+
+- name: Touch the sysvinit file.
+  file: path=/var/lib/ceph/mon/{{ ceph_cluster_name }}-{{ ansible_hostname }}/sysvinit state=touch owner=root group=root mode=0644
+
+- name: Start and add that the monitor service to the init sequence.
+  shell: |
+    /etc/init.d/ceph start mon.{{ ansible_hostname }}
+    sleep 15
+
+- name: Copy keys to the ansible server.
+  fetch: src={{ item }} dest=fetch/{{ ceph_fsid }}
+  when: inventory_hostname == groups['ceph-mon'][0] and cephx
+  with_items:
+    - /etc/ceph/ceph.client.admin.keyring
+    - /var/lib/ceph/bootstrap-osd/ceph.keyring
+    - /var/lib/ceph/bootstrap-mds/ceph.keyring
+
+- name: Openstack config.
+  include: openstack.yml
+  when: openstack_config
