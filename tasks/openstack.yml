@@ -14,7 +14,8 @@
   command: >
     ceph auth get-or-create {{ item.name }} {{ item.value }} -o /etc/ceph/ceph.{{ item.name }}.keyring
     creates=/etc/ceph/ceph.{{ item.name }}.keyring
-  with_items: openstack_keys
+  with_items:
+    - "{{ openstack_keys }}"
   changed_when: False
   when: inventory_hostname == groups['ceph-mon'][0] and cephx
 
@@ -27,4 +28,5 @@
 - name: Copy OpenStack keys to the ansible server.
   fetch: src=/etc/ceph/ceph.{{ item.name }}.keyring dest=fetch/{{ ceph_fsid }}
   when: inventory_hostname == groups['ceph-mon'][0] and cephx
-  with_items: openstack_keys
+  with_items:
+    - "{{ openstack_keys }}"
