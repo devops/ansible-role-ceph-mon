@@ -25,7 +25,9 @@
     sleep 15
 
 - name: Copy keys to the ansible server.
-  fetch: src={{ item }} dest=fetch/{{ ceph_fsid }}
+  fetch:
+    src: "{{ item }}"
+    dest: "{{ inventory_dir }}/fetch/{{ ceph_fsid }}"
   when: inventory_hostname == groups['ceph-mon'][0] and cephx
   with_items:
     - /etc/ceph/ceph.client.admin.keyring
@@ -34,4 +36,4 @@
 
 - name: Openstack config.
   include: openstack.yml
-  when: openstack_config
+  when: ceph_openstack_config

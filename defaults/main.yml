@@ -4,7 +4,7 @@
 ceph_cluster_name: "ceph"
 ceph_fsid: "80605375-25ef-46b0-afee-97aff959463f"
 
-openstack_config: False
+ceph_openstack_config: False
 ceph_pool_pg_num: 128
 openstack_glance_pool: "glance"
 openstack_cinder_pool: "cinder"
